@@ -25,35 +25,33 @@ except Exception as e:
 
 # Get user input for data to encrypt
 plaintext = input("Enter data to encrypt and store as secret: ")
+print("Plaintext:", plaintext)
 
 # Encrypt the data
-cipher_text = crypto_client.encrypt(plaintext.encode())
+encrypt_result = crypto_client.encrypt("RSA1_5",plaintext.encode())
 
 # Display encrypt cipher data
-print("ciphertext:", cipher_text)
+print("ciphertext:", encrypt_result.ciphertext)
 
 # Convert the encrypted data to base64 for storage
-encrypted_data_base64 = base64.b64encode(cipher_text.ciphertext).decode('utf-8')
+encrypted_data_base64 = base64.b64encode(encrypt_result.ciphertext).decode('utf-8')
 
 # Store the encrypted data as a secret in Azure Key Vault
 secret_client.set_secret(secret_name, encrypted_data_base64)
 
 # Print confirmation message
-print("Encrypted data stored as secret successfully.")
-# Fetch the encryption key using its identifier
-secret = secret_client.get_secret(secret_name)
-# key_id = secret.properties.key_id
-# key = key_client.get_key_from_key_id(key_id)
-key = key_client.get_key(key_name, key_version)
-# Initialize the Cryptography client with the fetched key
-crypto_client = CryptographyClient(key, credential=credential)
+print("Encrypted data stored as secret successfully.",secret_name,secret_client,SecretClient.get_secret)
 
 # Retrieve the encrypted data (secret) from Azure Key Vault
-encrypted_data_base64 = secret_client.get_secret(secret_name).value
+secret = secret_client.get_secret(secret_name)
+encrypted_data_base64 = secret.value  # Retrieve the secret value
+
+# Convert the base64-encoded encrypted data to bytes
 encrypted_data = base64.b64decode(encrypted_data_base64)
 
 # Decrypt the encrypted data using the encryption key
-decrypted_data = crypto_client.decrypt(encrypted_data)
+decrypt_result = crypto_client.decrypt("RSA1_5",encrypted_data)
 
 # Display the original string to the user
-print("Original data:", decrypted_data.decode('utf-8'))
+print("Original data:", decrypt_result.plaintext.decode('utf-8'))
+
